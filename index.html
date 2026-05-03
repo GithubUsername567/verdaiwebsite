@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdai — Diagnose your crops in seconds</title>
+<meta name="description" content="Verdai is a pocket agronomist for every grower. Snap a leaf, get a diagnosis and treatment plan in under ten seconds." />
+<link rel="canonical" href="https://verdai.farm" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://verdai.farm" />
+<meta property="og:title" content="Verdai — Diagnose your crops in seconds" />
+<meta property="og:description" content="A pocket agronomist for every grower. Snap a leaf, get a diagnosis and treatment plan in under ten seconds." />
+<meta property="og:image" content="https://verdai.farm/assets/og-image.png" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Verdai — Diagnose your crops in seconds" />
+<meta name="twitter:description" content="A pocket agronomist for every grower. Snap a leaf, get a diagnosis and treatment plan in under ten seconds." />
+<meta name="twitter:image" content="https://verdai.farm/assets/og-image.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f4efe6;
+    --bg-cream: #ebe4d4;
+    --ink: #1a2418;
+    --ink-soft: #4a5448;
+    --ink-muted: #7d8479;
+    --hairline: #d9d0bd;
+    --hairline-strong: #c2b89f;
+    --leaf: #2f5d3a;
+    --leaf-deep: #1f3f27;
+    --moss: #6b8e4e;
+    --bark: #3a2e22;
+    --sun: #d4a23a;
+    --rust: #b3502d;
+    --paper: #fbf8f1;
+    --leaf-tint: #e3ecdc;
+  }
+  html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+  html, body { background: var(--bg); color: var(--ink); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  .serif { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; letter-spacing: -0.02em; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  ::selection { background: var(--leaf); color: var(--paper); }
+
+  /* ── Layout ───────────────────────────────── */
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+  .wrap-narrow { max-width: 980px; margin: 0 auto; padding: 0 32px; }
+
+  /* ── Nav ──────────────────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(244,239,230,0.85);
+    backdrop-filter: saturate(150%) blur(14px);
+    -webkit-backdrop-filter: saturate(150%) blur(14px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .3s;
+  }
+  nav.scrolled { border-bottom-color: var(--hairline); }
+  .nav-inner {
+    height: 68px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px;
+    letter-spacing: -0.02em; color: var(--ink);
+    text-decoration: none;
+  }
+  .logo-mark {
+    width: 32px; height: 32px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .logo-mark svg, .logo-mark img { width: 100%; height: 100%; display: block; object-fit: contain; }
+  .logo-wordmark {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    font-size: 24px;
+    line-height: 1;
+  }
+  .logo-wordmark .dot { color: var(--leaf); font-style: italic; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-links a { color: var(--ink-soft); text-decoration: none; font-size: 14.5px; font-weight: 500; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    background: var(--ink); color: var(--paper);
+    border: none; padding: 10px 18px; border-radius: 999px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: transform .15s, background .15s;
+  }
+  .nav-cta:hover { background: var(--leaf-deep); transform: translateY(-1px); }
+
+  /* ── Buttons ──────────────────────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 24px; border-radius: 999px;
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    text-decoration: none; cursor: pointer; border: none;
+    transition: transform .15s ease, box-shadow .15s ease, background .15s;
+  }
+  .btn-primary {
+    background: var(--leaf); color: var(--paper);
+    box-shadow: 0 1px 0 rgba(255,255,255,.2) inset, 0 8px 24px -8px rgba(47,93,58,.55);
+  }
+  .btn-primary:hover { background: var(--leaf-deep); transform: translateY(-1px); }
+  .btn-ghost {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--hairline-strong);
+  }
+  .btn-ghost:hover { background: var(--paper); }
+
+  /* ── Hero ─────────────────────────────────── */
+  .hero {
+    padding: 80px 0 100px;
+    position: relative;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 12.5px; font-weight: 500; letter-spacing: 0.02em;
+    color: var(--ink-soft);
+    padding: 6px 14px 6px 8px;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    margin-bottom: 28px;
+  }
+  .eyebrow-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--leaf);
+    box-shadow: 0 0 0 4px rgba(47,93,58,.18);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
+
+  h1.hero-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(48px, 6.5vw, 84px);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    margin-bottom: 28px;
+    text-wrap: balance;
+  }
+  h1.hero-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--leaf);
+  }
+  .hero-sub {
+    font-size: 19px; line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 520px;
+    margin-bottom: 36px;
+    text-wrap: pretty;
+  }
+  .hero-cta-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .hero-meta {
+    margin-top: 36px; display: flex; gap: 28px; flex-wrap: wrap;
+    font-size: 13.5px; color: var(--ink-muted);
+  }
+  .hero-meta strong { color: var(--ink); font-weight: 600; }
+
+  /* Hero visual: phone mockup */
+  .phone-stage {
+    position: relative;
+    height: 600px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .phone-bg-blob {
+    position: absolute;
+    width: 480px; height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #c4d4b1, #8aa873 60%, transparent 75%);
+    filter: blur(40px);
+    opacity: .45;
+    z-index: 0;
+  }
+  .phone {
+    position: relative; z-index: 2;
+    width: 280px; height: 580px;
+    border-radius: 44px;
+    background: #0e1f0e;
+    padding: 8px;
+    box-shadow: 0 30px 60px -20px rgba(31,63,39,.45), 0 6px 20px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+  .phone-screen {
+    width: 100%; height: 100%;
+    border-radius: 36px;
+    background: linear-gradient(180deg, #f8f5ee 0%, #ece6d6 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .phone-notch {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    width: 88px; height: 24px;
+    background: #0e1f0e;
+    border-radius: 999px;
+    z-index: 5;
+  }
+  .phone-content { padding: 50px 18px 18px; height: 100%; display: flex; flex-direction: column; }
+  .phone-greet { font-size: 11px; color: var(--ink-muted); letter-spacing: .04em; text-transform: uppercase; }
+  .phone-title { font-family: 'Fraunces', serif; font-size: 20px; line-height: 1.15; color: var(--ink); margin: 4px 0 16px; letter-spacing: -.02em; }
+
+  .leaf-card {
+    flex: 1;
+    border-radius: 22px;
+    background: linear-gradient(160deg, #2f5d3a 0%, #1f3f27 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 18px;
+    color: var(--paper);
+    box-shadow: 0 8px 22px -8px rgba(31,63,39,.7);
+  }
+  .leaf-card::before {
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 80% 110%, rgba(212,162,58,.18), transparent 50%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 300'><defs><pattern id='p' width='30' height='30' patternUnits='userSpaceOnUse'><circle cx='15' cy='15' r='0.6' fill='%23ffffff' opacity='0.18'/></pattern></defs><rect width='200' height='300' fill='url(%23p)'/></svg>");
+    opacity: .9;
+  }
+  .scan-frame {
+    position: relative; z-index: 1;
+    border: 1.5px dashed rgba(255,255,255,.45);
+    border-radius: 14px;
+    padding: 12px;
+    height: 200px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .scan-leaf {
+    width: 100%; height: 100%;
+    border-radius: 10px;
+    background:
+      radial-gradient(ellipse at 50% 40%, #6b8e4e 0%, #3e5c2a 70%),
+      linear-gradient(180deg, #6b8e4e, #2f5d3a);
+    position: relative;
+    overflow: hidden;
+  }
+  .scan-leaf::before {
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(179,80,45,.55) 0%, transparent 6%),
+      radial-gradient(circle at 65% 60%, rgba(179,80,45,.45) 0%, transparent 5%),
+      radial-gradient(circle at 45% 75%, rgba(179,80,45,.4) 0%, transparent 4%);
+  }
+  .scan-leaf::after {
+    content:''; position:absolute;
+    left: 8%; right: 8%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(212,162,58,.95), transparent);
+    box-shadow: 0 0 12px rgba(212,162,58,.8);
+    border-radius: 2px;
+    animation: scanline 2.4s ease-in-out infinite;
+  }
+  @keyframes scanline {
+    0%, 100% { top: 12%; }
+    50% { top: 88%; }
+  }
+  .scan-label {
+    position: absolute; bottom: 14px; left: 14px; right: 14px; z-index: 2;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .scan-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 8px var(--sun); }
+  .scan-text-1 { font-size: 11px; color: rgba(255,255,255,.7); letter-spacing: .04em; }
+  .scan-text-2 { font-size: 13px; font-weight: 600; color: white; }
+
+  .phone-result {
+    margin-top: 14px;
+    background: rgba(255,255,255,.94);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .result-pill {
+    background: var(--leaf-tint); color: var(--leaf-deep);
+    font-size: 10px; font-weight: 700; letter-spacing: .05em;
+    padding: 4px 8px; border-radius: 6px;
+  }
+  .result-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .result-conf { margin-left: auto; font-size: 11px; color: var(--ink-muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* Float labels around the phone */
+  .float-card {
+    position: absolute;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 12px 30px -12px rgba(31,63,39,.25);
+    font-size: 13px;
+    z-index: 3;
+  }
+  .float-card .ic {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .float-1 { top: 60px; left: 4%; animation: floatY 4s ease-in-out infinite; }
+  .float-2 { bottom: 80px; right: 4%; animation: floatY 4.6s ease-in-out -1.4s infinite; }
+  .float-3 { top: 36%; right: -4%; animation: floatY 5.2s ease-in-out -2.6s infinite; }
+  @keyframes floatY {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* ── Section Heads ────────────────────────── */
+  section { padding: 100px 0; }
+  .section-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 500;
+    color: var(--leaf);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(36px, 4.5vw, 56px);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    text-wrap: balance;
+    max-width: 780px;
+  }
+  .section-title em { font-style: italic; color: var(--leaf); font-weight: 400; }
+  .section-sub {
+    font-size: 18px; color: var(--ink-soft);
+    max-width: 620px; margin-top: 18px;
+    text-wrap: pretty;
+  }
+
+  /* ── Feature row ──────────────────────────── */
+  .feature-grid {
+    margin-top: 64px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .feature {
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 22px;
+    padding: 28px;
+    transition: transform .25s, box-shadow .25s;
+  }
+  .feature:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -20px rgba(31,63,39,.18); }
+  .feature-ic {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--leaf-tint);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
+  }
+  .feature h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px; font-weight: 500; letter-spacing: -.015em;
+    margin-bottom: 8px;
+  }
+  .feature p { color: var(--ink-soft); font-size: 15px; line-height: 1.55; }
+
+  /* ── How it works ─────────────────────────── */
+  .how-section { background: var(--bg-cream); }
+  .steps {
+    margin-top: 64px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    position: relative;
+  }
+  .step {
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 22px;
+    padding: 32px 28px;
+    position: relative;
+  }
+  .step-num {
+    font-family: 'Fraunces', serif;
+    font-size: 56px; font-weight: 400;
+    line-height: 1;
+    color: var(--leaf);
+    font-style: italic;
+    margin-bottom: 12px;
+    letter-spacing: -.04em;
+  }
+  .step h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 24px; font-weight: 500; letter-spacing: -.015em;
+    margin-bottom: 8px;
+  }
+  .step p { color: var(--ink-soft); font-size: 15px; }
+  .step-visual {
+    margin-top: 22px;
+    height: 120px;
+    border-radius: 14px;
+    background: var(--leaf-tint);
+    position: relative;
+    overflow: hidden;
+    border: 1px dashed rgba(47,93,58,.25);
+  }
+
+  /* Step visuals */
+  .sv-snap { background: linear-gradient(135deg, #2f5d3a, #1f3f27); }
+  .sv-snap::before {
+    content:''; position:absolute; inset: 18px;
+    border: 2px solid rgba(255,255,255,.4); border-radius: 10px;
+  }
+  .sv-snap::after {
+    content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:36px; height:36px; border-radius:50%;
+    background: rgba(255,255,255,.95);
+    box-shadow: inset 0 0 0 3px #2f5d3a;
+  }
+
+  .sv-analyze {
+    background:
+      repeating-linear-gradient(180deg, transparent 0 14px, rgba(47,93,58,.08) 14px 15px),
+      var(--leaf-tint);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .sv-analyze span {
+    width: 8px; border-radius: 4px;
+    background: var(--leaf);
+    animation: bar 1.2s ease-in-out infinite;
+  }
+  .sv-analyze span:nth-child(1) { height: 30px; animation-delay: 0s; }
+  .sv-analyze span:nth-child(2) { height: 60px; animation-delay: .15s; }
+  .sv-analyze span:nth-child(3) { height: 45px; animation-delay: .3s; }
+  .sv-analyze span:nth-child(4) { height: 70px; animation-delay: .45s; }
+  .sv-analyze span:nth-child(5) { height: 38px; animation-delay: .6s; }
+  @keyframes bar { 0%,100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
+
+  .sv-treat {
+    background: linear-gradient(135deg, #f4efe6, #e3ecdc);
+    padding: 16px;
+  }
+  .sv-treat .row {
+    display: flex; align-items: center; gap: 8px;
+    background: white;
+    padding: 8px 10px; border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    border: 1px solid var(--hairline);
+  }
+  .sv-treat .check {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--leaf); display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 9px;
+  }
+
+  /* ── Pricing ─────────────────────────────── */
+  .pricing-grid {
+    margin-top: 56px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    align-items: stretch;
+  }
+  .price-card {
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 24px;
+    padding: 32px 26px;
+    display: flex; flex-direction: column;
+    position: relative;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+  }
+  .price-card:hover { transform: translateY(-4px); border-color: var(--hairline-strong); }
+  .price-card.featured {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+    box-shadow: 0 30px 60px -25px rgba(26,36,24,.55);
+    transform: translateY(-8px);
+  }
+  .price-card.featured:hover { transform: translateY(-12px); }
+  .price-tag {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--sun);
+    color: var(--ink);
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    padding: 5px 12px; border-radius: 999px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .price-name {
+    font-family: 'Fraunces', serif;
+    font-size: 22px; font-weight: 500; letter-spacing: -.01em;
+    margin-bottom: 4px;
+  }
+  .price-tagline {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 24px;
+    min-height: 38px;
+  }
+  .price-card.featured .price-tagline { color: rgba(251,248,241,.6); }
+  .price-amount {
+    display: flex; align-items: baseline; gap: 4px;
+    margin-bottom: 4px;
+  }
+  .price-currency { font-size: 20px; font-weight: 500; opacity: .7; }
+  .price-num {
+    font-family: 'Fraunces', serif;
+    font-size: 56px; font-weight: 500;
+    line-height: 1; letter-spacing: -.03em;
+  }
+  .price-period { font-size: 13px; color: var(--ink-muted); margin-bottom: 24px; }
+  .price-card.featured .price-period { color: rgba(251,248,241,.6); }
+  .price-custom {
+    font-family: 'Fraunces', serif;
+    font-size: 22px; font-weight: 500; letter-spacing: -.02em;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+  .price-divider {
+    height: 1px; background: var(--hairline);
+    margin: 0 -8px 22px;
+  }
+  .price-card.featured .price-divider { background: rgba(255,255,255,.12); }
+  .price-features {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 28px;
+    flex: 1;
+  }
+  .price-features li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 14px; line-height: 1.45;
+  }
+  .price-features li svg { flex-shrink: 0; margin-top: 3px; }
+  .price-card.featured .price-features li { color: rgba(251,248,241,.88); }
+  .price-features .key { font-weight: 600; color: var(--ink); }
+  .price-card.featured .price-features .key { color: var(--paper); }
+  .price-cta {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    font-family: inherit; font-size: 14.5px; font-weight: 600;
+    border: 1px solid var(--hairline-strong);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .price-cta:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .price-card.featured .price-cta {
+    background: var(--paper); color: var(--ink); border-color: var(--paper);
+  }
+  .price-card.featured .price-cta:hover { background: var(--sun); border-color: var(--sun); }
+  .price-card.coop .price-features li { font-size: 13.5px; }
+  .coop-tier-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    margin-bottom: 10px;
+  }
+
+  .pricing-footnote {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--ink-muted);
+  }
+
+
+  /* ── FAQ ─────────────────────────────────── */
+  .faq-list { margin-top: 56px; }
+  details.faq {
+    border-top: 1px solid var(--hairline);
+    padding: 22px 4px;
+  }
+  details.faq:last-child { border-bottom: 1px solid var(--hairline); }
+  details.faq summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Fraunces', serif;
+    font-size: 22px; font-weight: 500; letter-spacing: -.015em;
+    color: var(--ink);
+  }
+  details.faq summary::-webkit-details-marker { display: none; }
+  details.faq .faq-icon {
+    width: 28px; height: 28px; flex-shrink: 0;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .25s, background .25s;
+  }
+  details.faq[open] .faq-icon { background: var(--leaf); border-color: var(--leaf); transform: rotate(45deg); }
+  details.faq[open] .faq-icon svg path { stroke: var(--paper); }
+  details.faq p {
+    margin-top: 14px;
+    color: var(--ink-soft);
+    max-width: 720px;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* ── Final CTA ────────────────────────────── */
+  .final-cta {
+    text-align: center;
+    padding: 120px 0;
+    background: var(--bg-cream);
+    border-top: 1px solid var(--hairline);
+  }
+  .final-cta h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(40px, 5.5vw, 72px);
+    line-height: 1.02;
+    letter-spacing: -.03em;
+    margin-bottom: 20px;
+    text-wrap: balance;
+  }
+  .final-cta h2 em { font-style: italic; color: var(--leaf); font-weight: 400; }
+  .final-cta p { font-size: 19px; color: var(--ink-soft); margin-bottom: 36px; max-width: 540px; margin-left: auto; margin-right: auto; }
+
+  /* ── Footer ───────────────────────────────── */
+  footer {
+    background: var(--ink);
+    color: rgba(251,248,241,.7);
+    padding: 64px 0 32px;
+    font-size: 14px;
+  }
+  .foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+  .foot-brand .logo { color: var(--paper); margin-bottom: 14px; }
+  .foot-brand p { max-width: 280px; line-height: 1.55; }
+  .foot-col h4 { color: var(--paper); font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 16px; }
+  .foot-col a { display: block; color: rgba(251,248,241,.6); text-decoration: none; padding: 4px 0; }
+  .foot-col a:hover { color: var(--paper); }
+  .foot-bottom {
+    border-top: 1px solid rgba(255,255,255,.08);
+    padding-top: 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .foot-bottom span { font-size: 13px; color: rgba(251,248,241,.45); }
+
+  /* ── Waitlist form ───────────────────────── */
+  .waitlist-form {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    max-width: 480px;
+  }
+  .waitlist-form input[type="email"] {
+    flex: 1; min-width: 200px;
+    padding: 13px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--hairline-strong);
+    background: var(--paper);
+    font-family: inherit; font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .waitlist-form input[type="email"]:focus {
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 3px rgba(47,93,58,.12);
+  }
+  .waitlist-form input[type="email"]::placeholder { color: var(--ink-muted); }
+  .waitlist-success {
+    display: none;
+    align-items: center; gap: 10px;
+    font-size: 15px; font-weight: 500; color: var(--leaf);
+    padding: 13px 0;
+  }
+  .waitlist-success .check-ic {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--leaf-tint);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Center variant (final CTA) */
+  .waitlist-form.centered { max-width: 520px; margin: 0 auto; justify-content: center; }
+  .waitlist-form.centered input[type="email"] { text-align: center; }
+  .waitlist-success.centered { justify-content: center; }
+  .waitlist-error {
+    display: none;
+    align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 500; color: #b91c1c;
+    padding: 10px 0;
+  }
+  .waitlist-error.centered { justify-content: center; }
+
+  /* ── Responsive ───────────────────────────── */
+  @media (max-width: 1024px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .phone-stage { height: 540px; }
+    .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+    .price-card.featured { transform: none; }
+    .price-card.featured:hover { transform: translateY(-4px); }
+    .feature-grid, .steps { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .wrap, .wrap-narrow { padding: 0 20px; }
+    .nav-links { display: none; }
+    section { padding: 72px 0; }
+    .hero { padding: 56px 0 80px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr; }
+    .float-3 { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Reusable logo symbol ─────────────── -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="verdai-leaf-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7ba85e"/>
+      <stop offset="55%" stop-color="#3d7a48"/>
+      <stop offset="100%" stop-color="#1f3f27"/>
+    </linearGradient>
+    <symbol id="verdai-mark" viewBox="0 0 64 64">
+      <g transform="translate(32 32)">
+        <g fill="#1f3f27">
+          <path d="M0 0 C -4 -8, -2 -20, 0 -28 C 2 -20, 4 -8, 0 0 Z"/>
+          <path d="M0 0 C -4 -8, -2 -20, 0 -28 C 2 -20, 4 -8, 0 0 Z" transform="rotate(90)"/>
+          <path d="M0 0 C -4 -8, -2 -20, 0 -28 C 2 -20, 4 -8, 0 0 Z" transform="rotate(180)"/>
+          <path d="M0 0 C -4 -8, -2 -20, 0 -28 C 2 -20, 4 -8, 0 0 Z" transform="rotate(270)"/>
+        </g>
+        <g fill="#6b8e4e">
+          <path d="M0 0 C -4 -8, -2 -20, 0 -28 C 2 -20, 4 -8, 0 0 Z" transform="rotate(45)"/>
+          <path d="M0 0 C -4 -8, -2 -20, 0 -28 C 2 -20, 4 -8, 0 0 Z" transform="rotate(135)"/>
+          <path d="M0 0 C -4 -8, -2 -20, 0 -28 C 2 -20, 4 -8, 0 0 Z" transform="rotate(225)"/>
+          <path d="M0 0 C -4 -8, -2 -20, 0 -28 C 2 -20, 4 -8, 0 0 Z" transform="rotate(315)"/>
+        </g>
+        <circle r="3" fill="#1f3f27"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ── Nav ───────────────────────────────── -->
+<nav id="nav">
+  <div class="wrap nav-inner">
+    <a href="#" class="logo">
+      <span class="logo-mark"><img src="assets/verdai-logo-rosette.png" alt="Verdai" /></span>
+      <span class="logo-wordmark">verd<span class="dot">a</span><span class="dot">i</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a href="#waitlist" class="nav-cta">Join the waitlist</a>
+  </div>
+</nav>
+
+<!-- ── Hero ──────────────────────────────── -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">
+        <span class="eyebrow-dot"></span>
+        <span class="mono">Coming soon — be first in the field</span>
+      </div>
+      <h1 class="hero-title">
+        Heal your crops <em>before</em> they tell you something's wrong.
+      </h1>
+      <p class="hero-sub">
+        Verdai is a pocket agronomist for every grower. Snap a leaf — get a diagnosis, a treatment plan, and a community of farmers who've been there in under ten seconds.
+      </p>
+      <form class="waitlist-form" id="hero-waitlist" onsubmit="submitWaitlist(event, 'hero-waitlist')">
+        <input type="email" placeholder="your@email.com" required autocomplete="email" />
+        <button type="submit" class="btn btn-primary" style="white-space:nowrap;">
+          Get early access
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </form>
+      <div class="waitlist-success" id="hero-waitlist-success">
+        <span class="check-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        You're on the list — we'll be in touch before launch.
+      </div>
+      <div class="waitlist-error" id="hero-waitlist-error"></div>
+      <p style="margin-top:14px; font-size:13px; color:var(--ink-muted);">
+        <a href="#how" style="color:var(--ink-muted); text-underline-offset:3px;">See how it works ↓</a>
+      </p>
+    </div>
+
+    <div class="phone-stage">
+      <div class="phone-bg-blob"></div>
+
+      <div class="float-card float-1">
+        <div class="ic" style="background:#fde9c8; color:#b3502d;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 3v.01M5.07 19h13.86a2 2 0 0 0 1.74-3l-6.93-12a2 2 0 0 0-3.48 0L3.33 16a2 2 0 0 0 1.74 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:600; font-size:13px;">Frost warning</div>
+          <div style="color:var(--ink-muted); font-size:11.5px;">North field · 04:30</div>
+        </div>
+      </div>
+
+      <div class="float-card float-2">
+        <div class="ic" style="background:var(--leaf-tint); color:var(--leaf);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:600; font-size:13px;">Treatment confirmed</div>
+          <div style="color:var(--ink-muted); font-size:11.5px;">Tomato · early blight</div>
+        </div>
+      </div>
+
+      <div class="float-card float-3">
+        <div class="ic" style="background:#f5e6c4; color:#7b5a16;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:600; font-size:13px;">Re-spray due</div>
+          <div style="color:var(--ink-muted); font-size:11.5px;">in 2 days</div>
+        </div>
+      </div>
+
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-content">
+            <div class="phone-greet">Diagnose</div>
+            <div class="phone-title">Hold steady. We'll do the rest.</div>
+            <div class="leaf-card">
+              <div class="scan-frame">
+                <div class="scan-leaf"></div>
+              </div>
+              <div class="scan-label">
+                <span class="scan-dot"></span>
+                <div>
+                  <div class="scan-text-1 mono">ANALYZING</div>
+                  <div class="scan-text-2">Tomato leaf · 87% match</div>
+                </div>
+              </div>
+            </div>
+            <div class="phone-result">
+              <span class="result-pill">FUNGAL</span>
+              <span class="result-name">Early blight</span>
+              <span class="result-conf">96.2%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Features ──────────────────────────── -->
+<section id="features">
+  <div class="wrap">
+    <div class="section-eyebrow">// What it does</div>
+    <h2 class="section-title">A toolkit for the <em>thinking grower.</em></h2>
+    <p class="section-sub">Everything you need to keep a healthy field — from a single leaf to a whole co-operative — without leaving your pocket.</p>
+
+    <div class="feature-grid">
+
+      <div class="feature">
+        <div class="feature-ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9V7a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z" stroke="#2f5d3a" stroke-width="1.8"/><circle cx="12" cy="13" r="4" stroke="#2f5d3a" stroke-width="1.8"/></svg>
+        </div>
+        <h3>Instant diagnosis</h3>
+        <p>Point your camera at a leaf, fruit, or stem. Verdai identifies 700+ diseases, pests, and deficiencies in under three seconds.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke="#2f5d3a" stroke-width="1.8"/><path d="M8 9h8M8 13h5" stroke="#2f5d3a" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Agronomist on call</h3>
+        <p>Ask follow-up questions in plain language. Get treatment plans calibrated for your crop, climate, and what you have on hand.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 18l4-7 4 4 3-5 3 3" stroke="#2f5d3a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="#2f5d3a" stroke-width="1.8"/></svg>
+        </div>
+        <h3>Local market prices</h3>
+        <p>Live spot prices for 80+ crops at markets near you. Know what your harvest is worth before you head to town.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 16V8l9-5 9 5v8l-9 5-9-5z" stroke="#2f5d3a" stroke-width="1.8" stroke-linejoin="round"/><path d="m3 8 9 5 9-5M12 13v8" stroke="#2f5d3a" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Field journal</h3>
+        <p>Every scan, treatment, and observation auto-logs to a per-plot history. Spot patterns, plan rotations, prove provenance.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 15a4 4 0 0 1 4-4h1a5 5 0 0 1 9.9-1A4 4 0 0 1 21 14a4 4 0 0 1-4 4H7a4 4 0 0 1-4-3z" stroke="#2f5d3a" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Hyperlocal weather</h3>
+        <p>Plot-level forecasts with frost, heat, and spray-window alerts pushed before they matter. No more checking three apps.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.5" stroke="#2f5d3a" stroke-width="1.8"/><circle cx="17" cy="10" r="2.5" stroke="#2f5d3a" stroke-width="1.8"/><path d="M3 19a6 6 0 0 1 12 0M14 17a4 4 0 0 1 7 0" stroke="#2f5d3a" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Grower community</h3>
+        <p>Compare notes with farmers in your region growing the same crop. Verified agronomists weigh in on the toughest threads.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works ──────────────────────── -->
+<section id="how" class="how-section">
+  <div class="wrap">
+    <div class="section-eyebrow">// How it works</div>
+    <h2 class="section-title">From <em>"hmm, that's odd"</em> to a treatment plan in three steps.</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">i.</div>
+        <h3>Snap the symptom</h3>
+        <p>Open the camera, frame the affected leaf or fruit. Verdai works offline — no signal, no problem.</p>
+        <div class="step-visual sv-snap"></div>
+      </div>
+      <div class="step">
+        <div class="step-num">ii.</div>
+        <h3>We analyze</h3>
+        <p>Our model cross-references your photo against 4M+ field-validated images and returns a confidence-ranked diagnosis.</p>
+        <div class="step-visual sv-analyze">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">iii.</div>
+        <h3>Treat with confidence</h3>
+        <p>Step-by-step organic and chemical options, with dosages adjusted for your crop's stage and your local conditions.</p>
+        <div class="step-visual sv-treat">
+          <div class="row"><span class="check">✓</span> Remove infected leaves</div>
+          <div class="row"><span class="check">✓</span> Apply copper fungicide</div>
+          <div class="row"><span class="check">✓</span> Improve air circulation</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pricing ───────────────────────────── -->
+<section id="pricing">
+  <div class="wrap">
+    <div class="section-eyebrow">// Pricing</div>
+    <h2 class="section-title">Honest plans. <em>Locked in</em> at launch.</h2>
+    <p class="section-sub">These are the prices you'll pay at launch. Join the waitlist and your tier is reserved — no surprise increases once we ship.</p>
+
+    <div class="pricing-grid">
+
+      <!-- Sprout (Free) -->
+      <div class="price-card">
+        <div class="price-name">Sprout</div>
+        <div class="price-tagline">For curious growers and home gardens.</div>
+        <div class="price-amount">
+          <span class="price-currency">$</span>
+          <span class="price-num">0</span>
+        </div>
+        <div class="price-period">Free, forever</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><span class="key">3 diagnoses</span> per month</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>1 plot</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Basic treatment guide</span>
+          </li>
+        </ul>
+        <a href="#waitlist" class="price-cta" style="text-align:center; text-decoration:none; display:block;">Join the waitlist</a>
+      </div>
+
+      <!-- Grower -->
+      <div class="price-card">
+        <div class="price-name">Grower</div>
+        <div class="price-tagline">For working smallholders and side-hustle farmers.</div>
+        <div class="price-amount">
+          <span class="price-currency">$</span>
+          <span class="price-num">5.99</span>
+        </div>
+        <div class="price-period">per month · or <strong>$59/yr</strong></div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><span class="key">25 diagnoses</span> per month</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Full treatment guides</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Weather alerts</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>3 plots</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Field journal</span>
+          </li>
+        </ul>
+        <a href="#waitlist" class="price-cta" style="text-align:center; text-decoration:none; display:block;">Join the waitlist</a>
+      </div>
+
+      <!-- Pro (featured) -->
+      <div class="price-card featured">
+        <div class="price-tag">Most popular</div>
+        <div class="price-name">Pro</div>
+        <div class="price-tagline">For full-time farmers who scan every day.</div>
+        <div class="price-amount">
+          <span class="price-currency">$</span>
+          <span class="price-num">14.99</span>
+        </div>
+        <div class="price-period">per month · or <strong>$149/yr</strong></div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#d4a23a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><span class="key">100 diagnoses</span> per month</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#d4a23a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Market alerts</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#d4a23a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Priority AI responses</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#d4a23a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>10 plots</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#d4a23a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>PDF / CSV reports</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#d4a23a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Advanced analytics &amp; history</span>
+          </li>
+        </ul>
+        <a href="#waitlist" class="price-cta" style="text-align:center; text-decoration:none; display:block;">Join the waitlist</a>
+      </div>
+
+      <!-- Co-op (Starter + Growth) -->
+      <div class="price-card coop">
+        <div class="price-name">Co-op</div>
+        <div class="price-tagline">For farmer groups, cooperatives, and extension teams.</div>
+        <div class="price-custom">Contact for pricing</div>
+        <div class="price-divider"></div>
+        <div class="coop-tier-label">Starter</div>
+        <ul class="price-features">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Up to <span class="key">25 farmers</span></span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><span class="key">1,500 pooled</span> diagnoses/month</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Shared dashboard &amp; reports</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Roles &amp; permissions · Outbreak alerts</span>
+          </li>
+        </ul>
+        <div class="price-divider" style="margin: 4px -8px 16px;"></div>
+        <div class="coop-tier-label">Growth</div>
+        <ul class="price-features" style="flex: 1;">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Up to <span class="key">100 farmers</span></span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><span class="key">5,000 pooled</span> diagnoses/month</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Multi-farm analytics &amp; heatmaps</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Export tools · Priority support</span>
+          </li>
+        </ul>
+        <a href="mailto:partnerships@verdai.com" class="price-cta" style="text-align:center; text-decoration:none; display:block;">Contact Us</a>
+      </div>
+
+    </div>
+
+    <p class="pricing-footnote">Prices in USD. Local pricing will be applied at checkout. Plans and features subject to change before launch.</p>
+  </div>
+</section>
+
+<!-- ── FAQ ───────────────────────────────── -->
+<section id="faq" style="background: var(--bg-cream);">
+  <div class="wrap-narrow">
+    <div class="section-eyebrow">// Frequently asked</div>
+    <h2 class="section-title">Questions, <em>answered honestly.</em></h2>
+
+    <div class="faq-list">
+      <details class="faq" open>
+        <summary>
+          Does Verdai really work offline?
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#1a2418" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        </summary>
+        <p>Yes. Pro and Co-op tiers include an on-device diagnosis pack covering the 200 most common diseases in your region. Tap once before you head to the field and you're set, even with zero signal.</p>
+      </details>
+
+      <details class="faq">
+        <summary>
+          What counts as a "diagnosis"?
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#1a2418" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        </summary>
+        <p>One photo submitted for analysis equals one diagnosis. Follow-up questions to the agronomist about the same scan are unlimited on every paid tier. Re-scans of the same plant within 24 hours don't count twice.</p>
+      </details>
+
+      <details class="faq">
+        <summary>
+          Can I switch tiers or cancel anytime?
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#1a2418" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        </summary>
+        <p>Always. Upgrades take effect immediately, downgrades at the next billing cycle. If you cancel, your data and field journal stay intact — re-subscribe and pick up exactly where you left off.</p>
+      </details>
+
+      <details class="faq">
+        <summary>
+          How is Verdai different from a Google image search?
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#1a2418" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        </summary>
+        <p>A search returns thousands of look-alikes; Verdai returns one ranked diagnosis tied to your crop, your stage, and your weather. Then it tells you what to do next, with treatments calibrated for what's actually available where you live.</p>
+      </details>
+
+      <details class="faq">
+        <summary>
+          Do you offer a discount for co-ops in lower-income regions?
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#1a2418" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        </summary>
+        <p>Yes — purchasing-power pricing is automatically applied at checkout based on your country, and we offer a sponsored Co-op tier free of charge for verified extension programs. Reach out to partnerships@verdai.com.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ── Final CTA ─────────────────────────── -->
+<section class="final-cta" id="waitlist">
+  <div class="wrap-narrow">
+    <h2>Be the first grower <em>in the field.</em></h2>
+    <p>Join the waitlist and we'll let you know the moment Verdai is ready — early access, no spam, unsubscribe anytime.</p>
+    <form class="waitlist-form centered" id="main-waitlist" onsubmit="submitWaitlist(event, 'main-waitlist')">
+      <input type="email" placeholder="your@email.com" required autocomplete="email" />
+      <button type="submit" class="btn btn-primary">
+        Get early access
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </form>
+    <div class="waitlist-success centered" id="main-waitlist-success">
+      <span class="check-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#2f5d3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      You're on the list — we'll be in touch before launch.
+    </div>
+    <div class="waitlist-error centered" id="main-waitlist-error"></div>
+  </div>
+</section>
+
+<!-- ── Footer ────────────────────────────── -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid" style="grid-template-columns: 1.5fr 1fr;">
+      <div class="foot-brand">
+        <div class="logo" style="color:var(--paper);">
+          <span class="logo-mark"><img src="assets/verdai-logo-rosette.png" alt="Verdai" /></span>
+          <span class="logo-wordmark">verd<span class="dot" style="color:var(--moss);">a</span><span class="dot" style="color:var(--moss);">i</span></span>
+        </div>
+        <p>A pocket agronomist for every grower. Built with farmers, for farmers.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Navigate</h4>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#waitlist">Join the waitlist</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Verdai. Made in the field.</span>
+      <span class="mono">currently in development</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  async function submitWaitlist(e, formId) {
+    e.preventDefault();
+    const form = document.getElementById(formId);
+    const success = document.getElementById(formId + '-success');
+    const errorEl = document.getElementById(formId + '-error');
+    const email = form.querySelector('input[type="email"]').value;
+    const btn = form.querySelector('button[type="submit"]');
+    const originalHTML = btn.innerHTML;
+
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Joining…';
+
+    try {
+      const res = await fetch('/.netlify/functions/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        form.style.display = 'none';
+        success.style.display = 'flex';
+      } else {
+        errorEl.textContent = data.error || 'Something went wrong. Please try again.';
+        errorEl.style.display = 'flex';
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }
+    } catch {
+      errorEl.textContent = 'Network error. Please check your connection and try again.';
+      errorEl.style.display = 'flex';
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+  }
+</script>
+
+</body>
+</html>
